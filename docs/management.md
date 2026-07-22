@@ -16,6 +16,8 @@ Before assigning a registered permission:
 
 Consumer user models must be Eloquent models using Spatie's `HasRoles` trait.
 
+For initial application data, see [Seeding permissions, roles, and user assignments](seeding.md). The guide shows how to use these services from a trusted database seeder without weakening the authorization boundary.
+
 ## `RoleManager`
 
 Inject the service:

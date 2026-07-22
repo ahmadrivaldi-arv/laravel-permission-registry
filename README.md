@@ -18,6 +18,7 @@ This package does not replace Laravel authorization. It does not provide a UI, c
 - [Registry registration, discovery, and queries](docs/registry.md)
 - [Artisan command reference](docs/commands.md)
 - [Role and user management services](docs/management.md)
+- [Seeding permissions, roles, and user assignments](docs/seeding.md)
 - [Laravel Gate, policies, Blade, and Livewire](docs/authorization.md)
 - [Events, exceptions, and troubleshooting](docs/events-and-troubleshooting.md)
 - [Deployment and operational safety](docs/operations.md)
