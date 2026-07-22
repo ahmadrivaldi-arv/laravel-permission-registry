@@ -21,6 +21,49 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  laravel-10:
+    name: P8.3 - L10.* - Spatie 6.10.1 - ubuntu-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      # Laravel 10's compatible testing stack uses Pest 2 and Testbench 8.
+      # These are development-only substitutions; consumers do not install
+      # this package's require-dev dependencies.
+      - name: Install Laravel 10 dependencies
+        run: |
+          composer remove --dev larastan/larastan nunomaduro/collision pestphp/pest pestphp/pest-plugin-arch pestphp/pest-plugin-laravel phpstan/extension-installer phpstan/phpstan-deprecation-rules phpstan/phpstan-phpunit --no-interaction --no-update
+          composer require --dev "laravel/framework:^10.0" "orchestra/testbench:^8.0" "nunomaduro/collision:^7.0" "pestphp/pest:^2.0" "pestphp/pest-plugin-arch:^2.0" "pestphp/pest-plugin-laravel:^2.0" --no-interaction --no-update
+          composer require "spatie/laravel-permission:6.10.1" --no-interaction --no-update
+          composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: List installed dependencies
+        run: composer show -D
+
+      # Pest 2 only executes the first path when several test files are passed.
+      # ArchTest uses Pest 4 syntax and remains covered by the Laravel 11-13 job.
+      - name: Execute behavioral tests
+        run: |
+          vendor/bin/pest --ci tests/CommandTest.php
+          vendor/bin/pest --ci tests/IntegrationTest.php
+          vendor/bin/pest --ci tests/ManagementServicesTest.php
+          vendor/bin/pest --ci tests/RegistryTest.php
+
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
@@ -59,7 +102,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer require --dev "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
       - name: List Installed Dependencies

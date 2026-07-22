@@ -25,8 +25,8 @@ This package does not replace Laravel authorization. It does not provide a UI, c
 ## Requirements and installation
 
 - PHP 8.3 or newer
-- Laravel 11, 12, or 13
-- `spatie/laravel-permission` 6.25 or newer within version 6
+- Laravel 10, 11, 12, or 13
+- `spatie/laravel-permission` 6.10 or newer within version 6
 
 Install both packages, publish Spatie's configuration and migrations, and migrate according to Spatie's documentation:
 

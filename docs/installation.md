@@ -3,8 +3,8 @@
 ## Requirements
 
 - PHP 8.3 or newer
-- Laravel 11, 12, or 13
-- `spatie/laravel-permission` version 6.25 or newer within major version 6
+- Laravel 10, 11, 12, or 13
+- `spatie/laravel-permission` version 6.10 or newer within major version 6
 
 The package declares Spatie Permission as a direct dependency. If the application already uses a compatible version, Composer reuses it.
 
@@ -14,7 +14,7 @@ The package declares Spatie Permission as a direct dependency. If the applicatio
 composer require ahmdrv/laravel-permission-registry
 ```
 
-Laravel package discovery registers both service providers. If package discovery is disabled in the application, register these providers manually:
+Laravel package discovery registers both service providers. If package discovery is disabled, register them manually in `bootstrap/providers.php` on Laravel 11 and newer:
 
 ```php
 // bootstrap/providers.php
@@ -24,6 +24,16 @@ return [
     Spatie\Permission\PermissionServiceProvider::class,
     Ahmdrv\PermissionRegistry\PermissionRegistryServiceProvider::class,
 ];
+```
+
+On Laravel 10, add both providers to the `providers` array in `config/app.php`:
+
+```php
+'providers' => ServiceProvider::defaultProviders()->merge([
+    App\Providers\AppServiceProvider::class,
+    Spatie\Permission\PermissionServiceProvider::class,
+    Ahmdrv\PermissionRegistry\PermissionRegistryServiceProvider::class,
+])->toArray(),
 ```
 
 ## 2. Install Spatie's persistence layer
