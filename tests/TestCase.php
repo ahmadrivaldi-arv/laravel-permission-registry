@@ -2,9 +2,9 @@
 
 namespace Ahmdrv\PermissionRegistry\Tests;
 
+use Ahmdrv\PermissionRegistry\PermissionRegistryServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Ahmdrv\PermissionRegistry\PermissionRegistryServiceProvider;
 
 class TestCase extends Orchestra
 {

@@ -2,9 +2,9 @@
 
 namespace Ahmdrv\PermissionRegistry;
 
+use Ahmdrv\PermissionRegistry\Commands\PermissionRegistryCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Ahmdrv\PermissionRegistry\Commands\PermissionRegistryCommand;
 
 class PermissionRegistryServiceProvider extends PackageServiceProvider
 {
