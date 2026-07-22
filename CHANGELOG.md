@@ -10,3 +10,4 @@ All notable changes to `laravel-permission-registry` will be documented in this 
 - Add deterministic explicit registration, discovery, inspection, diff, and synchronization.
 - Add secured role, user-role, direct-permission, and access-inspection services.
 - Add the `rbac:make-resource`, `rbac:validate`, `rbac:list`, `rbac:diff`, and `rbac:sync` commands.
+- Add comprehensive installation, configuration, feature, command, management, authorization, troubleshooting, and operations documentation.

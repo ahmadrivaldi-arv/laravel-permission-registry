@@ -8,6 +8,20 @@ A headless, code-first registry for defining, discovering, validating, inspectin
 
 This package does not replace Laravel authorization. It does not provide a UI, couple resources to Eloquent models, infer access, or generate policies. A permission resource is an authorization domain such as products, dashboards, reports, settings, or imports.
 
+## Documentation
+
+- [Documentation index](docs/README.md)
+- [Installation and first setup](docs/installation.md)
+- [Configuration](docs/configuration.md)
+- [Permission resources, presets, and metadata](docs/resources.md)
+- [Advisory recommendations](docs/recommendations.md)
+- [Registry registration, discovery, and queries](docs/registry.md)
+- [Artisan command reference](docs/commands.md)
+- [Role and user management services](docs/management.md)
+- [Laravel Gate, policies, Blade, and Livewire](docs/authorization.md)
+- [Events, exceptions, and troubleshooting](docs/events-and-troubleshooting.md)
+- [Deployment and operational safety](docs/operations.md)
+
 ## Requirements and installation
 
 - PHP 8.3 or newer
