@@ -2,6 +2,43 @@
 
 All notable changes to `laravel-permission-registry` will be documented in this file.
 
+## Laravel Permission Registry v1.0.1 - 2026-07-22
+
+### Laravel 10 compatibility
+
+- Add Laravel 10 support while preserving Laravel 11, 12, and 13 support.
+- Lower the `spatie/laravel-permission` requirement from 6.25 to 6.10 within major version 6.
+- Add a dedicated Laravel 10, Testbench 8, Pest 2, and Spatie Permission 6.10.1 compatibility job.
+- Keep the existing modern Laravel test matrix unchanged.
+
+Laravel 10 applications running PHP 8.3 or newer and Spatie Permission 6.10.x can now install normally:
+
+```bash
+composer require ahmdrv/laravel-permission-registry
+
+```
+### Documentation
+
+- Add a complete guide for seeding registered permissions, roles, and user-role assignments through the package APIs.
+- Explain the explicit trusted-actor authorization pattern for initial database seeders.
+- Add repository-wide AI agent guidance covering architecture, compatibility, security, testing, and release practices.
+
+### Compatibility
+
+- PHP 8.3 or newer
+- Laravel 10, 11, 12, or 13
+- `spatie/laravel-permission` 6.10 or newer within version 6
+
+### Validation
+
+- All 37 GitHub compatibility jobs passed across Laravel 10–13, PHP 8.3–8.5, Ubuntu, and Windows.
+- PHPStan passed with no errors.
+- Pint passed.
+- Composer strict validation passed.
+- Local suite: 36 tests and 139 assertions passed.
+
+This release does not change the public API or authorization semantics. Recommendations remain advisory metadata only and never affect grants, persistence, or effective access.
+
 ## 1.0.1 - 2026-07-22
 
 - Add Laravel 10 support and expand compatibility to `spatie/laravel-permission` 6.10 and newer within version 6.
@@ -42,6 +79,7 @@ The first production-ready release of a headless, code-first permission resource
 
 ```bash
 composer require ahmdrv/laravel-permission-registry
+
 
 ```
 See the [README](https://github.com/ahmadrivaldi-arv/laravel-permission-registry#readme) and [documentation index](https://github.com/ahmadrivaldi-arv/laravel-permission-registry/blob/main/docs/README.md) for setup and usage.
