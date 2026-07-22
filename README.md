@@ -18,6 +18,7 @@ This package does not replace Laravel authorization. It does not provide a UI, c
 - [Registry registration, discovery, and queries](docs/registry.md)
 - [Artisan command reference](docs/commands.md)
 - [Role and user management services](docs/management.md)
+- [Seeding permissions, roles, and user assignments](docs/seeding.md)
 - [Laravel Gate, policies, Blade, and Livewire](docs/authorization.md)
 - [Events, exceptions, and troubleshooting](docs/events-and-troubleshooting.md)
 - [Deployment and operational safety](docs/operations.md)
@@ -25,8 +26,8 @@ This package does not replace Laravel authorization. It does not provide a UI, c
 ## Requirements and installation
 
 - PHP 8.3 or newer
-- Laravel 11, 12, or 13
-- `spatie/laravel-permission` 6.25 or newer within version 6
+- Laravel 10, 11, 12, or 13
+- `spatie/laravel-permission` 6.10 or newer within version 6
 
 Install both packages, publish Spatie's configuration and migrations, and migrate according to Spatie's documentation:
 

@@ -19,9 +19,11 @@ it('validates and lists definitions including recommendations', function () {
         ->expectsOutputToContain('2 resources and 8 permissions are valid')
         ->assertSuccessful();
 
-    $exit = Artisan::call('rbac:list', ['--resource' => 'products', '--with-recommendations' => true, '--json' => true]);
-    expect($exit)->toBe(0)
-        ->and(Artisan::output())->toContain('products.publish', 'reports.view_any', 'Useful for report history');
+    foreach (['products.publish', 'reports.view_any', 'Useful for report history'] as $expectedOutput) {
+        $this->artisan('rbac:list', ['--resource' => 'products', '--with-recommendations' => true, '--json' => true])
+            ->expectsOutputToContain($expectedOutput)
+            ->assertSuccessful();
+    }
 
     $this->artisan('rbac:list', ['--risk' => 'invalid'])->assertFailed();
 });
