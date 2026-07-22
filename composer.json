@@ -1,17 +1,17 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "ahmdrv/laravel-permission-registry",
+    "description": "A code-first permission resource registry and synchronization toolkit for Spatie Laravel Permission.",
     "keywords": [
-        ":vendor_name",
+        "Ahmdrv",
         "laravel",
-        ":package_slug"
+        "laravel-permission-registry"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/ahmdrv/laravel-permission-registry",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "Ahmad Rivaldi",
+            "email": "rivaldi19122@gmail.com",
             "role": "Developer"
         }
     ],
@@ -30,18 +30,17 @@
         "pestphp/pest-plugin-laravel": "^4.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpstan/phpstan-phpunit": "^2.0",
-        "spatie/laravel-ray": "^1.35"
+        "phpstan/phpstan-phpunit": "^2.0"
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "Ahmdrv\\PermissionRegistry\\": "src/",
+            "Ahmdrv\\PermissionRegistry\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/",
+            "Ahmdrv\\PermissionRegistry\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -63,10 +62,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Ahmdrv\\PermissionRegistry\\PermissionRegistryServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "PermissionRegistry": "Ahmdrv\\PermissionRegistry\\Facades\\PermissionRegistry"
             }
         }
     },

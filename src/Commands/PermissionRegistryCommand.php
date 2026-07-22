@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Ahmdrv\PermissionRegistry\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class PermissionRegistryCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-permission-registry';
 
     public $description = 'My command';
 
