@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-permission-registry` will be documented in this file.
 
-## Unreleased
+## 1.0.1 - 2026-07-22
 
 - Add Laravel 10 support and expand compatibility to `spatie/laravel-permission` 6.10 and newer within version 6.
 - Document database seeding through the registry and secured management-service APIs.
