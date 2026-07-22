@@ -6,7 +6,7 @@
         "laravel",
         "laravel-permission-registry"
     ],
-    "homepage": "https://github.com/ahmdrv/laravel-permission-registry",
+    "homepage": "https://github.com/ahmadrivaldi-arv/laravel-permission-registry",
     "license": "MIT",
     "authors": [
         {
@@ -17,8 +17,14 @@
     ],
     "require": {
         "php": "^8.3",
+        "illuminate/auth": "^11.0||^12.0||^13.0",
+        "illuminate/console": "^11.0||^12.0||^13.0",
+        "illuminate/contracts": "^11.0||^12.0||^13.0",
+        "illuminate/database": "^11.0||^12.0||^13.0",
+        "illuminate/filesystem": "^11.0||^12.0||^13.0",
+        "illuminate/support": "^11.0||^12.0||^13.0",
         "spatie/laravel-package-tools": "^1.16",
-        "illuminate/contracts": "^11.0||^12.0||^13.0"
+        "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {
         "laravel/pint": "^1.14",
@@ -34,15 +40,32 @@
     },
     "autoload": {
         "psr-4": {
-            "Ahmdrv\\PermissionRegistry\\": "src/",
-            "Ahmdrv\\PermissionRegistry\\Database\\Factories\\": "database/factories/"
+            "Ahmdrv\\PermissionRegistry\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Ahmdrv\\PermissionRegistry\\Tests\\": "tests/",
-            "Workbench\\App\\": "workbench/app/"
+            "Ahmdrv\\PermissionRegistry\\Tests\\": "tests/"
         }
+    },
+    "archive": {
+        "exclude": [
+            "/.github",
+            "/.git*",
+            "/.phpunit.cache",
+            "/build",
+            "/composer.lock",
+            "/coverage",
+            "/database",
+            "/phpunit.xml.dist",
+            "/phpstan.neon.dist",
+            "/resources/views",
+            "/src/Facades",
+            "/testbench.yaml",
+            "/tests",
+            "/vendor",
+            "/workbench"
+        ]
     },
     "scripts": {
         "post-autoload-dump": "@composer run prepare",
@@ -63,10 +86,7 @@
         "laravel": {
             "providers": [
                 "Ahmdrv\\PermissionRegistry\\PermissionRegistryServiceProvider"
-            ],
-            "aliases": {
-                "PermissionRegistry": "Ahmdrv\\PermissionRegistry\\Facades\\PermissionRegistry"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",

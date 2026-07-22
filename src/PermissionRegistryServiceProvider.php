@@ -1,25 +1,40 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Ahmdrv\PermissionRegistry;
 
-use Ahmdrv\PermissionRegistry\Commands\PermissionRegistryCommand;
+use Ahmdrv\PermissionRegistry\Authorization\GateManagementAuthorizer;
+use Ahmdrv\PermissionRegistry\Commands\DiffCommand;
+use Ahmdrv\PermissionRegistry\Commands\ListCommand;
+use Ahmdrv\PermissionRegistry\Commands\MakeResourceCommand;
+use Ahmdrv\PermissionRegistry\Commands\SyncCommand;
+use Ahmdrv\PermissionRegistry\Commands\ValidateCommand;
+use Ahmdrv\PermissionRegistry\Contracts\ManagementAuthorizer;
+use Ahmdrv\PermissionRegistry\Contracts\PermissionRegistry;
+use Ahmdrv\PermissionRegistry\Registry\DefaultPermissionRegistry;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class PermissionRegistryServiceProvider extends PackageServiceProvider
+final class PermissionRegistryServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
         $package
             ->name('laravel-permission-registry')
             ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_laravel_permission_registry_table')
-            ->hasCommand(PermissionRegistryCommand::class);
+            ->hasCommands([
+                MakeResourceCommand::class,
+                ValidateCommand::class,
+                ListCommand::class,
+                DiffCommand::class,
+                SyncCommand::class,
+            ]);
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->singleton(PermissionRegistry::class, DefaultPermissionRegistry::class);
+        $this->app->singleton(ManagementAuthorizer::class, GateManagementAuthorizer::class);
     }
 }
