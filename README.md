@@ -1,7 +1,7 @@
 # Laravel Permission Registry
 
-[![Tests](https://github.com/ahmdrv/laravel-permission-registry/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ahmdrv/laravel-permission-registry/actions/workflows/run-tests.yml)
-[![PHPStan](https://github.com/ahmdrv/laravel-permission-registry/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ahmdrv/laravel-permission-registry/actions/workflows/phpstan.yml)
+[![Tests](https://github.com/ahmadrivaldi-arv/laravel-permission-registry/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ahmadrivaldi-arv/laravel-permission-registry/actions/workflows/run-tests.yml)
+[![PHPStan](https://github.com/ahmadrivaldi-arv/laravel-permission-registry/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ahmadrivaldi-arv/laravel-permission-registry/actions/workflows/phpstan.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ahmdrv/laravel-permission-registry.svg?style=flat-square)](https://packagist.org/packages/ahmdrv/laravel-permission-registry)
 
 A headless, code-first registry for defining, discovering, validating, inspecting, and synchronizing permissions backed by [spatie/laravel-permission](https://spatie.be/docs/laravel-permission). It gives authorization capabilities a deterministic source of truth while leaving persistence, Laravel Gate integration, role-derived access, and direct access calculation to Spatie.
@@ -295,4 +295,4 @@ Please include focused tests for behavioral changes. See the [changelog](CHANGEL
 
 ## Credits
 
-- [Ahmad Rivaldi](https://github.com/ahmdrv)
+- [Ahmad Rivaldi](https://github.com/ahmadrivaldi-arv)

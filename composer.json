@@ -6,7 +6,7 @@
         "laravel",
         "laravel-permission-registry"
     ],
-    "homepage": "https://github.com/ahmdrv/laravel-permission-registry",
+    "homepage": "https://github.com/ahmadrivaldi-arv/laravel-permission-registry",
     "license": "MIT",
     "authors": [
         {
@@ -40,15 +40,32 @@
     },
     "autoload": {
         "psr-4": {
-            "Ahmdrv\\PermissionRegistry\\": "src/",
-            "Ahmdrv\\PermissionRegistry\\Database\\Factories\\": "database/factories/"
+            "Ahmdrv\\PermissionRegistry\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Ahmdrv\\PermissionRegistry\\Tests\\": "tests/",
-            "Workbench\\App\\": "workbench/app/"
+            "Ahmdrv\\PermissionRegistry\\Tests\\": "tests/"
         }
+    },
+    "archive": {
+        "exclude": [
+            "/.github",
+            "/.git*",
+            "/.phpunit.cache",
+            "/build",
+            "/composer.lock",
+            "/coverage",
+            "/database",
+            "/phpunit.xml.dist",
+            "/phpstan.neon.dist",
+            "/resources/views",
+            "/src/Facades",
+            "/testbench.yaml",
+            "/tests",
+            "/vendor",
+            "/workbench"
+        ]
     },
     "scripts": {
         "post-autoload-dump": "@composer run prepare",

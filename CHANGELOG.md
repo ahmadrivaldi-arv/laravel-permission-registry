@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-permission-registry` will be documented in this file.
 
-## Unreleased
+## 1.0.0 - 2026-07-22
 
 - Add the initial production-ready code-first permission resource registry.
 - Add CRUD, read-only, and none presets with custom metadata overrides and exclusions.
