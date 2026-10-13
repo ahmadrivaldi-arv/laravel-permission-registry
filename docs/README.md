@@ -18,7 +18,7 @@ Laravel Permission Registry is the code-owned catalog around `spatie/laravel-per
 | --- | --- |
 | [Installation](installation.md) | Requirements, Spatie prerequisites, user model setup, publishing configuration, first resource, first sync |
 | [Configuration](configuration.md) | Guard resolution, explicit resources, discovery, direct permissions, management abilities |
-| [Resources](resources.md) | Naming, presets, action merging, exclusions, labels, descriptions, risk, groups, direct eligibility |
+| [Resources](resources.md) | Naming, presets, action merging, exclusions, labels, descriptions, risk, groups, preset direct eligibility and explicit opt-outs |
 | [Recommendations](recommendations.md) | Typed API, validation, cycles, and strict non-authorization semantics |
 | [Registry](registry.md) | Registration, discovery rules, normalized definitions, lookup and grouping APIs |
 | [Commands](commands.md) | Generator, validation, listing, diff, sync, JSON, dry-run, and prune behavior |

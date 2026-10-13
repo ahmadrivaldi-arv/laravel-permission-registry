@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Ahmdrv\PermissionRegistry\Contracts\ManagementAuthorizer;
 use Ahmdrv\PermissionRegistry\Events\DirectPermissionGranted;
 use Ahmdrv\PermissionRegistry\Events\DirectPermissionRevoked;
+use Ahmdrv\PermissionRegistry\Events\DirectPermissionsSynchronized;
 use Ahmdrv\PermissionRegistry\Events\RolePermissionsSynchronized;
 use Ahmdrv\PermissionRegistry\Events\UserRolesSynchronized;
 use Ahmdrv\PermissionRegistry\Exceptions\DirectPermissionsDisabled;
@@ -19,6 +20,7 @@ use Ahmdrv\PermissionRegistry\Services\UserRoleManager;
 use Ahmdrv\PermissionRegistry\Tests\Fixtures\DenyAllAuthorizer;
 use Ahmdrv\PermissionRegistry\Tests\Fixtures\Resources\ProductPermissionResource;
 use Ahmdrv\PermissionRegistry\Tests\Fixtures\Resources\ReportPermissionResource;
+use Ahmdrv\PermissionRegistry\Tests\Fixtures\Resources\SettingsPermissionResource;
 use Ahmdrv\PermissionRegistry\Tests\Fixtures\TestUser;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Event;
@@ -27,7 +29,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
-    config()->set('permission-registry.resources', [ProductPermissionResource::class, ReportPermissionResource::class]);
+    config()->set('permission-registry.resources', [ProductPermissionResource::class, ReportPermissionResource::class, SettingsPermissionResource::class]);
     config()->set('permission-registry.discovery.enabled', false);
     app(PermissionSynchronizer::class)->sync();
     $this->actor = TestUser::create(['name' => 'Administrator']);
@@ -77,13 +79,70 @@ it('assigns removes and synchronizes user roles with post-success events', funct
 it('keeps direct permissions opt-in and restricted per definition', function () {
     $manager = app(DirectPermissionManager::class);
 
-    expect(fn () => $manager->grant($this->actor, $this->user, 'products.publish'))
+    expect(fn () => $manager->grant($this->actor, $this->user, 'products.view'))
         ->toThrow(DirectPermissionsDisabled::class);
 
     config()->set('permission-registry.direct_permissions.enabled', true);
-    expect(fn () => $manager->grant($this->actor, $this->user, 'products.view'))
+    expect(fn () => $manager->grant($this->actor, $this->user, 'products.update'))
         ->toThrow(PermissionNotDirectGrantable::class);
     expect($this->user->fresh()->getDirectPermissions())->toHaveCount(0);
+});
+
+it('grants and synchronizes eligible preset permissions idempotently with cache invalidation', function () {
+    Event::fake([DirectPermissionGranted::class, DirectPermissionsSynchronized::class]);
+    config()->set('permission-registry.direct_permissions.enabled', true);
+    $registrar = app(PermissionRegistrar::class);
+    $registrar->getPermissions();
+    $manager = app(DirectPermissionManager::class);
+
+    $manager->grant($this->actor, $this->user, 'products.delete');
+    $manager->grant($this->actor, $this->user->fresh(), 'products.delete');
+
+    expect($this->user->fresh()->getDirectPermissions()->pluck('name')->all())->toBe(['products.delete'])
+        ->and($registrar->getCacheStore()->get(config('permission.cache.key')))->toBeNull();
+    Event::assertDispatchedTimes(DirectPermissionGranted::class, 1);
+
+    $registrar->getPermissions();
+    $manager->sync($this->actor, $this->user->fresh(), ['reports.view', 'products.view']);
+    $manager->sync($this->actor, $this->user->fresh(), ['products.view', 'reports.view']);
+
+    expect($this->user->fresh()->getDirectPermissions()->pluck('name')->sort()->values()->all())->toBe(['products.view', 'reports.view'])
+        ->and($registrar->getCacheStore()->get(config('permission.cache.key')))->toBeNull();
+    Event::assertDispatchedTimes(DirectPermissionsSynchronized::class, 1);
+});
+
+it('rejects explicit opt-outs and ineligible custom actions before direct mutation', function (string $permission, string $operation) {
+    Event::fake([DirectPermissionGranted::class, DirectPermissionsSynchronized::class]);
+    config()->set('permission-registry.direct_permissions.enabled', true);
+    $this->user->givePermissionTo('products.publish');
+    $manager = app(DirectPermissionManager::class);
+
+    expect(fn () => $operation === 'grant'
+        ? $manager->grant($this->actor, $this->user->fresh(), $permission)
+        : $manager->sync($this->actor, $this->user->fresh(), ['products.view', $permission]))
+        ->toThrow(PermissionNotDirectGrantable::class);
+
+    expect($this->user->fresh()->getDirectPermissions()->pluck('name')->all())->toBe(['products.publish']);
+    Event::assertNotDispatched(DirectPermissionGranted::class);
+    Event::assertNotDispatched(DirectPermissionsSynchronized::class);
+})->with(['products.update', 'settings.manage'])->with(['grant', 'sync']);
+
+it('rejects denied actors and incompatible guards before granting preset permissions', function () {
+    Event::fake([DirectPermissionGranted::class]);
+    config()->set('permission-registry.direct_permissions.enabled', true);
+    config()->set('permission-registry.guard', 'admin');
+
+    expect(fn () => app(DirectPermissionManager::class)->grant($this->actor, $this->user, 'products.view'))
+        ->toThrow(GuardMismatch::class);
+
+    config()->set('permission-registry.guard', 'web');
+    app()->bind(ManagementAuthorizer::class, DenyAllAuthorizer::class);
+    app()->forgetInstance(DirectPermissionManager::class);
+    expect(fn () => app(DirectPermissionManager::class)->grant($this->actor, $this->user, 'products.view'))
+        ->toThrow(AuthorizationException::class);
+
+    expect($this->user->fresh()->getDirectPermissions())->toHaveCount(0);
+    Event::assertNotDispatched(DirectPermissionGranted::class);
 });
 
 it('grants and revokes only the named direct permission without recommendation expansion', function () {

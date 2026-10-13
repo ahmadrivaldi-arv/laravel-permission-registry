@@ -142,7 +142,7 @@ abstract class PermissionResource
 
     private static function standard(string $key, RiskLevel $risk): PermissionAction
     {
-        return PermissionAction::make($key)->risk($risk);
+        return PermissionAction::make($key)->risk($risk)->directGrantable();
     }
 
     private static function withDefaults(PermissionAction $action): PermissionAction

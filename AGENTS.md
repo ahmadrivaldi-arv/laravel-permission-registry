@@ -95,7 +95,7 @@ All permission inputs to management services must be registered in code and guar
 Direct user permissions are disabled globally by default. A direct grant requires both:
 
 1. `direct_permissions.enabled` to be true; and
-2. the action definition to be explicitly marked `directGrantable`.
+2. the action definition's `directGrantable` metadata to be true. CRUD and READ_ONLY preset actions default to true; custom actions require explicit `directGrantable()`. A preset action can opt out with `directGrantable(false)`.
 
 Revoking a direct permission must not remove access inherited through a role. Do not add explicit deny, expiry, precedence, or approval semantics.
 

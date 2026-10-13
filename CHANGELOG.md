@@ -2,6 +2,21 @@
 
 All notable changes to `laravel-permission-registry` will be documented in this file.
 
+## Unreleased
+
+## 1.1.0 - 2026-10-14
+
+### Changed
+
+- Make CRUD and read-only preset actions directly grantable by default, including `delete`.
+- Preserve explicit `directGrantable(false)` overrides and the false default for custom actions.
+- Keep direct user permissions globally disabled by default, with actor authorization and guard validation required for mutations.
+- Document preset eligibility and add regression coverage for defaults, opt-outs, grants, synchronization, cache invalidation, events, and idempotency. Recommendations remain advisory and never grant or preselect permissions.
+
+### Upgrade
+
+Applications that already enable direct permissions can now grant and synchronize preset actions directly. To preserve role-only eligibility for an action, declare `PermissionAction::make('delete')->directGrantable(false)` (using that action's key) in the resource's `actions()` hook. Override every applicable preset action to preserve the previous preset behavior. Existing assignments are not changed automatically.
+
 ## Laravel Permission Registry v1.0.1 - 2026-07-22
 
 ### Laravel 10 compatibility
