@@ -126,7 +126,7 @@ protected static function exceptActions(): array
 }
 ```
 
-Risk levels are `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL`. `directGrantable` defaults to false. Groups are generic organization metadata and carry no navigation or authorization behavior.
+Risk levels are `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL`. Preset actions default to `directGrantable=true`; custom actions default to false. Override a preset action with `->directGrantable(false)` to require assignment through roles. Groups are generic organization metadata and carry no navigation or authorization behavior.
 
 ## Advisory recommendations
 
@@ -238,7 +238,7 @@ The package neither defines nor grants these abilities. Bind your own `Ahmdrv\Pe
 
 ### Direct user permissions
 
-Direct grants require two opt-ins: `permission-registry.direct_permissions.enabled` must be true and the action must explicitly call `directGrantable()`. Role assignment ignores that metadata. Disabled direct mutations throw `DirectPermissionsDisabled` before writes, and ineligible grants throw `PermissionNotDirectGrantable`.
+Direct grants require `permission-registry.direct_permissions.enabled` to be true and the action's `directGrantable` metadata to be true. CRUD and read-only preset actions are eligible by default; custom actions require `->directGrantable()`, and preset actions can opt out with `->directGrantable(false)`. Eligibility never grants or preselects permissions. Role assignment ignores that metadata. Disabled direct mutations throw `DirectPermissionsDisabled` before writes, and ineligible grants throw `PermissionNotDirectGrantable`.
 
 ```php
 $directPermissionManager->grant($actor, $user, 'products.publish');

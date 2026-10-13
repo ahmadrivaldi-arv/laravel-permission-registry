@@ -122,7 +122,7 @@ When `rbac:make-resource` runs with discovery disabled, it prints the exact gene
 ],
 ```
 
-Direct user mutations require this global flag and per-action `directGrantable()` metadata. The global flag does not make every permission directly grantable. Role permissions are not restricted by this setting.
+Direct user mutations require this global flag and `directGrantable=true` in the action definition. CRUD and read-only preset actions are eligible by default; custom actions require `->directGrantable()`. Use `->directGrantable(false)` to opt a preset action out. The global flag does not make every permission directly grantable. Role permissions are not restricted by this setting.
 
 Recommended default:
 

@@ -12,7 +12,7 @@ Before assigning a registered permission:
 2. `rbac:sync` must have created its Spatie row for the selected guard;
 3. the target model/role must use a compatible guard;
 4. the actor must pass the configured management ability;
-5. direct grants must additionally pass both direct-permission opt-ins.
+5. direct grants must additionally pass the global feature flag and per-action eligibility check.
 
 Consumer user models must be Eloquent models using Spatie's `HasRoles` trait.
 
@@ -131,13 +131,15 @@ Direct permissions are exceptional overrides, not the preferred access model.
 ],
 ```
 
-### Mark individual actions eligible
+### Check individual action eligibility
+
+CRUD and read-only preset actions are directly grantable by default. Custom actions require explicit eligibility:
 
 ```php
 PermissionAction::make('publish')->directGrantable();
 ```
 
-Both conditions are required. `directGrantable` does not restrict role assignments.
+The global flag and eligible metadata are both required. To opt a preset action out, declare `PermissionAction::make('delete')->directGrantable(false)` in the resource's `actions()` hook. `directGrantable` does not restrict role assignments and never grants or preselects permissions.
 
 ### Grant, revoke, or synchronize
 

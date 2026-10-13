@@ -127,11 +127,13 @@ Use `update`, not `edit`: permissions describe capabilities, not screens.
 
 | Action | Label | Risk | Direct grantable |
 | --- | --- | --- | --- |
-| `view_any` | View Any | Low | No |
-| `view` | View | Low | No |
-| `create` | Create | Medium | No |
-| `update` | Update | Medium | No |
-| `delete` | Delete | High | No |
+| `view_any` | View Any | Low | Yes |
+| `view` | View | Low | Yes |
+| `create` | Create | Medium | Yes |
+| `update` | Update | Medium | Yes |
+| `delete` | Delete | High | Yes |
+
+These defaults apply to both CRUD and read-only presets. Direct mutations still require the global feature flag and management authorization. Eligibility never grants or preselects a permission.
 
 Custom actions default to a humanized key label, medium risk, no description, no recommendations, and not directly grantable.
 
@@ -161,7 +163,11 @@ PermissionAction::make('delete')
     ->risk(RiskLevel::CRITICAL);
 ```
 
-The standard label remains `Delete`, and direct-grant eligibility remains false.
+The standard label remains `Delete`, and direct-grant eligibility remains true. To restrict a preset action to role assignments, explicitly override its eligibility:
+
+```php
+PermissionAction::make('delete')->directGrantable(false);
+```
 
 All builder methods return a new immutable value object. Chain the returned value as shown rather than expecting in-place mutation.
 
@@ -200,7 +206,7 @@ Unknown exclusions fail validation. This catches likely typos such as `publsih` 
 | Label | `label('Publish product')` | Humanized key by default |
 | Description | `description('...')` | Optional |
 | Risk | `risk(RiskLevel::HIGH)` | Preset-specific or medium for custom actions |
-| Direct eligibility | `directGrantable()` | False by default |
+| Direct eligibility | `directGrantable(bool $grantable = true)` | True for preset actions; false for custom actions |
 | Recommendation | `recommend(...)` | Advisory metadata only |
 
 Group and risk metadata do not enforce authorization. They are provided for inspection, audit tools, filtering, and possible separate UI consumers.

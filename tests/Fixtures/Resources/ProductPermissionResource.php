@@ -35,6 +35,7 @@ final class ProductPermissionResource extends PermissionResource
                 ->directGrantable()
                 ->recommend(PermissionRecommendation::make('reports.view_any')->reason('Useful for report history.')),
             PermissionAction::make('delete')->risk(RiskLevel::CRITICAL),
+            PermissionAction::make('update')->directGrantable(false),
         ];
     }
 }

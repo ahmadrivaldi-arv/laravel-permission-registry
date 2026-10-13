@@ -45,7 +45,19 @@ it('adds custom actions and selectively overrides standard metadata', function (
         ->and($registry->findPermission('products.delete'))
         ->label->toBe('Delete')
         ->risk->toBe(RiskLevel::CRITICAL)
-        ->directGrantable->toBeFalse();
+        ->directGrantable->toBeTrue();
+});
+
+it('makes preset actions directly grantable while preserving explicit opt-outs and custom defaults', function () {
+    $registry = registryWith([ProductPermissionResource::class, ReportPermissionResource::class, SettingsPermissionResource::class]);
+
+    foreach (['products.view_any', 'products.view', 'products.create', 'products.delete', 'reports.view_any', 'reports.view'] as $name) {
+        expect($registry->findPermission($name)->directGrantable)->toBeTrue();
+    }
+
+    expect($registry->findPermission('products.update')->directGrantable)->toBeFalse()
+        ->and($registry->findPermission('settings.manage')->directGrantable)->toBeFalse()
+        ->and(array_column(WithoutDeletePermissionResource::definition()->actions, 'directGrantable'))->toBe([true, true, true, true]);
 });
 
 it('applies exclusions last', function () {
