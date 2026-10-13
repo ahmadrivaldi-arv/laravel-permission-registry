@@ -2,6 +2,43 @@
 
 All notable changes to `laravel-permission-registry` will be documented in this file.
 
+## Laravel Permission Registry v1.1.0 - 2026-10-13
+
+### Changed
+
+- CRUD and read-only preset actions are directly grantable by default, including `delete`.
+- Custom actions still require explicit `directGrantable()` eligibility.
+- Use `directGrantable(false)` on a preset action to restrict it to role assignments.
+
+Direct user permissions remain globally disabled by default. Enabling the feature still requires actor authorization, registered permission input, and matching guards. Eligibility never grants or preselects permissions, and recommendations remain advisory metadata only.
+
+### Upgrade
+
+Applications that already enable direct permissions can now grant and synchronize preset actions directly. To preserve role-only eligibility, override the relevant actions in the resource:
+
+```php
+protected static function actions(): array
+{
+    return [
+        PermissionAction::make('view_any')->directGrantable(false),
+        PermissionAction::make('view')->directGrantable(false),
+        PermissionAction::make('create')->directGrantable(false),
+        PermissionAction::make('update')->directGrantable(false),
+        PermissionAction::make('delete')->directGrantable(false),
+    ];
+}
+
+```
+Import `Ahmdrv\PermissionRegistry\ValueObjects\PermissionAction`. For read-only resources, override only `view_any` and `view`. Existing assignments are not changed automatically.
+
+### Validation
+
+- Local suite: 43 tests and 174 assertions passed.
+- Composer strict validation, PHPStan, Pint, and diff checks passed.
+- All 37 GitHub compatibility jobs passed on both the branch and PR across Laravel 10–13, PHP 8.3–8.5, Ubuntu, and Windows. GitHub PHPStan and Pint checks passed.
+
+Compatibility remains PHP 8.3+, Laravel 10–13, and Spatie Permission 6.10+ within major version 6.
+
 ## Unreleased
 
 ## 1.1.0 - 2026-10-14
@@ -30,6 +67,7 @@ Laravel 10 applications running PHP 8.3 or newer and Spatie Permission 6.10.x ca
 
 ```bash
 composer require ahmdrv/laravel-permission-registry
+
 
 ```
 ### Documentation
@@ -94,6 +132,7 @@ The first production-ready release of a headless, code-first permission resource
 
 ```bash
 composer require ahmdrv/laravel-permission-registry
+
 
 
 ```
