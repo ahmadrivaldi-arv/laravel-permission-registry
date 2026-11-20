@@ -4,13 +4,106 @@
 [![PHPStan](https://github.com/ahmadrivaldi-arv/laravel-permission-registry/actions/workflows/phpstan.yml/badge.svg)](https://github.com/ahmadrivaldi-arv/laravel-permission-registry/actions/workflows/phpstan.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ahmdrv/laravel-permission-registry.svg?style=flat-square)](https://packagist.org/packages/ahmdrv/laravel-permission-registry)
 
-A headless, code-first registry for defining, discovering, validating, inspecting, and synchronizing permissions backed by [spatie/laravel-permission](https://spatie.be/docs/laravel-permission). It gives authorization capabilities a deterministic source of truth while leaving persistence, Laravel Gate integration, role-derived access, and direct access calculation to Spatie.
+A headless, code-first registry for the permissions your Laravel application checks. You declare each feature's permissions in a PHP class next to your code; the package validates them, lists them, and synchronizes them into [spatie/laravel-permission](https://spatie.be/docs/laravel-permission). Spatie keeps storing roles and permissions, and Laravel Gate and policies keep making authorization decisions.
 
 This package does not replace Laravel authorization. It does not provide a UI, couple resources to Eloquent models, infer access, or generate policies. A permission resource is an authorization domain such as products, dashboards, reports, settings, or imports.
+
+## Why use it
+
+Without a registry, permission names live as strings scattered across controllers, seeders, and Blade views. Nobody can easily answer "which permissions does this application have?", seeders drift from the code, and removed features leave stale rows behind.
+
+This package makes the code the single source of truth:
+
+- **One place per feature.** Every protected feature gets a permission resource that names its capabilities, such as `invoices.view_any`, `invoices.create`, or `invoices.send`.
+- **Validated before it reaches the database.** Invalid keys, duplicates, and broken references fail `rbac:validate` in CI instead of in production.
+- **Safe synchronization.** `rbac:sync` adds missing permissions and deletes nothing unless you ask it to prune, and then only rows it can prove it manages.
+- **Guarded management.** Role and user services reject permission names that are not registered in code and authorize the acting user before any write.
+- **Inspectable.** `rbac:list` and `rbac:diff` show exactly what exists in code and in the database.
+- **Plain Laravel authorization.** You keep using `$this->authorize()`, policies, Gate, and `@can`. Nothing is implied or granted automatically.
+
+## Quick start: protecting a new feature
+
+Whenever you build a feature that should be restricted to certain users, give it a permission resource. Features that everyone may use need no resource.
+
+Suppose you are adding invoicing, and only some staff may create, send, or void invoices.
+
+**0. Prerequisite: Spatie Permission is installed and migrated.**
+
+This package stores nothing itself; roles and permissions live in Spatie's tables. Follow [Spatie's installation guide](https://spatie.be/docs/laravel-permission/v6/installation-laravel) once per application (publish, migrate, add `HasRoles`), then:
+
+```bash
+composer require ahmdrv/laravel-permission-registry
+```
+
+**1. Generate a permission resource.**
+
+```bash
+php artisan rbac:make-resource Invoice --group=billing
+```
+
+This creates `app/Authorization/Permissions/InvoicePermissionResource.php` with the CRUD preset, which already provides `invoices.view_any`, `invoices.view`, `invoices.create`, `invoices.update`, and `invoices.delete`.
+
+**2. Add the feature's own actions.**
+
+```php
+use Ahmdrv\PermissionRegistry\Enums\RiskLevel;
+use Ahmdrv\PermissionRegistry\ValueObjects\PermissionAction;
+
+protected static function actions(): array
+{
+    return [
+        PermissionAction::make('send')->label('Send invoice to customer'),
+        PermissionAction::make('void')->risk(RiskLevel::HIGH),
+    ];
+}
+```
+
+Declare only actions the feature really checks, and use `exceptActions()` to drop preset actions you do not need.
+
+**3. Validate and synchronize.**
+
+```bash
+php artisan rbac:validate          # check definitions (a good CI step)
+php artisan rbac:sync --dry-run    # preview what will be created
+php artisan rbac:sync              # create the missing permission rows
+```
+
+Run `rbac:sync` during each deployment so a new feature's permissions exist before anyone is assigned them.
+
+**4. Enforce the permissions in the feature.**
+
+```php
+// Controller or Livewire action: global capability
+$this->authorize('invoices.create');
+
+// Record-level rules (ownership, tenant, status) still belong in a policy
+$this->authorize('void', $invoice);
+```
+
+```blade
+@can('invoices.send')
+    <button type="submit">Send invoice</button>
+@endcan
+```
+
+`@can` only hides UI. Always authorize again on the server.
+
+**5. Give the permissions to a role.**
+
+```php
+$role = $roleManager->create($actor, 'billing-clerk');
+$roleManager->syncPermissions($actor, $role, ['invoices.view_any', 'invoices.create', 'invoices.send']);
+$userRoleManager->assign($actor, $user, 'billing-clerk');
+```
+
+Managers require an explicit `$actor` and authorize it through Laravel Gate. For initial data, see [Seeding permissions, roles, and user assignments](docs/seeding.md).
+
+That is the whole loop for every new feature: **resource → validate → sync → authorize → assign**. The [quick start guide](docs/quick-start.md) covers when a feature needs its own resource, a complete resource class, a policy example, and a checklist.
 
 ## Documentation
 
 - [Documentation index](docs/README.md)
+- [Quick start: protecting a new feature](docs/quick-start.md)
 - [Installation and first setup](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Permission resources, presets, and metadata](docs/resources.md)
@@ -29,15 +122,15 @@ This package does not replace Laravel authorization. It does not provide a UI, c
 - Laravel 10, 11, 12, or 13
 - `spatie/laravel-permission` 6.10 or newer within version 6
 
-Install both packages, publish Spatie's configuration and migrations, and migrate according to Spatie's documentation:
+**First, install and migrate Spatie Permission.** This package owns no database tables or migrations; roles and permissions live in Spatie's tables. Follow [Spatie's installation guide](https://spatie.be/docs/laravel-permission/v6/installation-laravel) once per application, including its migrations and the `HasRoles` trait on your user model.
+
+**Then install this package:**
 
 ```bash
 composer require ahmdrv/laravel-permission-registry
-php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
-php artisan migrate
 ```
 
-This package owns no database tables or migrations. Publish its focused configuration with:
+Optionally publish its focused configuration:
 
 ```bash
 php artisan vendor:publish --tag="laravel-permission-registry-config"
