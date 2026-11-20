@@ -94,11 +94,11 @@ Enable the global flag only when direct grants are intentional:
 'direct_permissions' => ['enabled' => true],
 ```
 
-The action must also be eligible: CRUD and read-only preset actions are eligible by default, while custom actions require `directGrantable()`. An explicit `directGrantable(false)` disables eligibility for that action.
+The action must also be eligible: preset and custom actions are eligible by default. An explicit `directGrantable(false)` disables eligibility for that action.
 
 ### A direct permission is not eligible
 
-Add eligibility to that exact action:
+The action was explicitly opted out with `directGrantable(false)`. Remove the opt-out, or set it back to true, only if direct grants are intended for that exact action:
 
 ```php
 PermissionAction::make('publish')->directGrantable();

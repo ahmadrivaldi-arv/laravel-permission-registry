@@ -8,7 +8,21 @@
 
 The package declares Spatie Permission as a direct dependency. If the application already uses a compatible version, Composer reuses it.
 
-## 1. Install the package
+## 1. Install and migrate Spatie Permission first
+
+This package owns no database tables and ships no migrations. Roles, permissions, and assignments live in Spatie's tables, so complete Spatie's setup before installing this package. Without it, `rbac:diff`, `rbac:sync`, and the management services cannot run.
+
+Follow [Spatie's installation guide](https://spatie.be/docs/laravel-permission/v6/installation-laravel) once per application. It covers publishing Spatie's configuration and migrations, options such as UUIDs, teams, and custom table names, running the migrations, and adding the `HasRoles` trait to your user model.
+
+When that guide is complete, confirm these requirements, which this package depends on:
+
+- Spatie's migrations have run on the database the application uses.
+- Every authenticatable model used with `UserRoleManager`, `DirectPermissionManager`, or `AccessInspector` uses Spatie's `HasRoles` trait. The package does not assume `App\Models\User`.
+- `config/auth.php` maps the guard this package resolves to the provider for that model. Applications with multiple guards should follow Spatie's guard-name conventions.
+
+## 2. Install this package
+
+With Spatie installed and migrated, require this package:
 
 ```bash
 composer require ahmdrv/laravel-permission-registry
@@ -36,40 +50,7 @@ On Laravel 10, add both providers to the `providers` array in `config/app.php`:
 ])->toArray(),
 ```
 
-## 2. Install Spatie's persistence layer
-
-Spatie owns all role and permission tables. This package deliberately ships no database migration.
-
-```bash
-php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
-php artisan migrate
-```
-
-Review Spatie's published `config/permission.php` before migrating when the application needs UUIDs, teams, custom table names, or custom role/permission models.
-
-## 3. Add Spatie's trait to the authenticatable model
-
-The package does not assume `App\Models\User`. Any Eloquent authenticatable model used with `UserRoleManager`, `DirectPermissionManager`, or `AccessInspector` must use Spatie's `HasRoles` trait:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Models;
-
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Spatie\Permission\Traits\HasRoles;
-
-final class User extends Authenticatable
-{
-    use HasRoles;
-}
-```
-
-Ensure `config/auth.php` maps the selected guard to the provider for this model. Applications with multiple guards should also follow Spatie's guard-name conventions on their authenticatable models.
-
-## 4. Publish the registry configuration
+## 3. Publish the registry configuration
 
 ```bash
 php artisan vendor:publish --tag="laravel-permission-registry-config"
@@ -85,7 +66,7 @@ The file is published as `config/permission-registry.php`. By default:
 
 See [Configuration](configuration.md) for every setting.
 
-## 5. Generate the first resource
+## 4. Generate the first resource
 
 ```bash
 php artisan rbac:make-resource Product --key=products --group=catalog --preset=crud
@@ -107,7 +88,7 @@ products.update
 products.delete
 ```
 
-## 6. Validate before writing
+## 5. Validate before writing
 
 ```bash
 php artisan rbac:validate
@@ -117,7 +98,7 @@ php artisan rbac:diff
 
 Validation and listing do not write to the database. Diff only reads the permission table for the resolved guard.
 
-## 7. Preview and synchronize
+## 6. Preview and synchronize
 
 ```bash
 php artisan rbac:sync --dry-run
@@ -126,7 +107,7 @@ php artisan rbac:sync
 
 The normal sync is additive. It creates missing Spatie permission rows, never creates roles, never assigns permissions, and never deletes existing rows unless `--prune` is explicitly requested.
 
-## 8. Grant permissions through roles
+## 7. Grant permissions through roles
 
 Use Spatie directly in a seeder, or use this package's secured services when an acting principal is available. The services validate code registration and guard compatibility before mutation:
 

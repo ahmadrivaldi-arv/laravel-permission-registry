@@ -29,6 +29,9 @@ final class SettingsPermissionResource extends PermissionResource
 
     protected static function actions(): array
     {
-        return [PermissionAction::make('manage')];
+        return [
+            PermissionAction::make('manage'),
+            PermissionAction::make('purge')->directGrantable(false),
+        ];
     }
 }

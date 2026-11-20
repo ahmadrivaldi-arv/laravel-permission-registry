@@ -32,6 +32,8 @@ The generated class:
 - does not redeclare standard actions;
 - does not require an empty `actions()` hook.
 
+After writing the file, the command prints a summary of the class, resource key, group, preset, and registration mode, followed by suggested next steps (`rbac:validate`, then `rbac:sync --dry-run`). An overwrite with `--force` is reported as such.
+
 When discovery is disabled, the command still creates the class and prints the exact FQCN to add to `permission-registry.resources`. It never rewrites PHP configuration.
 
 Invalid class names, keys, groups, presets, or generator configuration return a failure exit code.
@@ -44,7 +46,20 @@ php artisan rbac:validate
 
 Builds and validates the complete registry without reading or writing the permission database.
 
-Successful output reports resource and permission counts. Fatal definition problems are printed as errors and return a non-zero exit code. Advisory recommendation cycles are printed as warnings and still return success.
+Successful output is a summary of group, resource, permission, recommendation, and warning counts:
+
+```text
+  Permission registry
+  Groups ............................................. 2
+  Resources .......................................... 2
+  Permissions ........................................ 8
+  Recommendations advisory only ...................... 1
+  Warnings ........................................... 0
+
+   INFO  2 resources and 8 permissions are valid.
+```
+
+Fatal definition problems are reported together under one error heading, one item per problem, with a non-zero exit code. Advisory recommendation cycles are listed in a separate warnings section and still return success.
 
 Recommended CI step:
 
@@ -73,7 +88,20 @@ php artisan rbac:list --json
 | `--with-recommendations` | Add recommendation targets and reasons to the table |
 | `--json` | Emit deterministic machine-readable JSON |
 
-Table output includes group, resource, action, full permission, risk, and direct eligibility. JSON also includes label, description, and recommendations.
+Human-readable output is grouped by group and then resource. Each resource header shows its key, preset, and permission count; each permission row shows the full name, label, risk level, and direct eligibility (`direct` or `role only`). `--with-recommendations` adds an indented `↳ recommends` line per advisory target. A footer summarizes the totals.
+
+```text
+  CATALOG
+
+  Products products · crud · 6 permissions
+  products.view_any View Any ............................ LOW · direct
+  products.publish Publish product ..................... HIGH · direct
+    ↳ recommends reports.view_any — Useful for report history.
+
+  Showing 8 permissions across 2 resources in 2 groups.
+```
+
+When filters match nothing, the command prints a warning and still succeeds. JSON output is unchanged and also includes label, description, and recommendations.
 
 Examples:
 
@@ -112,6 +140,8 @@ Managed orphan: products.legacy
 Unmanaged:      billing.refund
 ```
 
+Human-readable output starts with a count per category, then lists the permissions in each non-empty category (`+` missing, `−` managed orphan, `·` unmanaged). Synchronized permissions are counted but only listed with `-v`. When there are missing permissions or managed orphans, the output ends with suggested `rbac:sync` or `rbac:sync --prune` commands; otherwise it confirms that the database matches the registry.
+
 Diff is read-only. Recommendations do not change any category.
 
 ## `rbac:sync`
@@ -138,6 +168,8 @@ Normal sync:
 8. clears Spatie's permission cache after successful changes;
 9. dispatches `RegistrySynchronized` after successful changes.
 
+Output shows created, existing, deleted, and untouched counts, then itemizes each created and deleted permission. A no-op run reports `Nothing to synchronize`. When managed orphans are kept because `--prune` was not supplied, a hint points to `rbac:diff` and `--prune`.
+
 Running the same sync again is idempotent. A no-op sync does not clear cache or emit the package synchronization event.
 
 Recommendations are validated but never materialized as database relationships or assignments.
@@ -148,7 +180,7 @@ Recommendations are validated but never materialized as database relationships o
 php artisan rbac:sync --dry-run
 ```
 
-Reports the intended counts without creating or deleting rows, clearing cache, or dispatching the synchronization event.
+Reports the intended counts and itemizes the permissions it would create or delete (`To create`, `To delete`) without creating or deleting rows, clearing cache, or dispatching the synchronization event.
 
 ### Prune
 

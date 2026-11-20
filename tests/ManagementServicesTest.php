@@ -111,7 +111,7 @@ it('grants and synchronizes eligible preset permissions idempotently with cache 
     Event::assertDispatchedTimes(DirectPermissionsSynchronized::class, 1);
 });
 
-it('rejects explicit opt-outs and ineligible custom actions before direct mutation', function (string $permission, string $operation) {
+it('rejects explicit preset and custom opt-outs before direct mutation', function (string $permission, string $operation) {
     Event::fake([DirectPermissionGranted::class, DirectPermissionsSynchronized::class]);
     config()->set('permission-registry.direct_permissions.enabled', true);
     $this->user->givePermissionTo('products.publish');
@@ -125,7 +125,19 @@ it('rejects explicit opt-outs and ineligible custom actions before direct mutati
     expect($this->user->fresh()->getDirectPermissions()->pluck('name')->all())->toBe(['products.publish']);
     Event::assertNotDispatched(DirectPermissionGranted::class);
     Event::assertNotDispatched(DirectPermissionsSynchronized::class);
-})->with(['products.update', 'settings.manage'])->with(['grant', 'sync']);
+})->with(['products.update', 'settings.purge'])->with(['grant', 'sync']);
+
+it('grants custom actions directly by default without implying other permissions', function () {
+    Event::fake([DirectPermissionGranted::class]);
+    config()->set('permission-registry.direct_permissions.enabled', true);
+    $manager = app(DirectPermissionManager::class);
+
+    $manager->grant($this->actor, $this->user, 'settings.manage');
+
+    expect($this->user->fresh()->getDirectPermissions()->pluck('name')->all())->toBe(['settings.manage'])
+        ->and($this->user->fresh()->hasPermissionTo('settings.purge'))->toBeFalse();
+    Event::assertDispatchedTimes(DirectPermissionGranted::class, 1);
+});
 
 it('rejects denied actors and incompatible guards before granting preset permissions', function () {
     Event::fake([DirectPermissionGranted::class]);

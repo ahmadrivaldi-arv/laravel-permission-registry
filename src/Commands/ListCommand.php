@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ahmdrv\PermissionRegistry\Commands;
 
+use Ahmdrv\PermissionRegistry\Commands\Concerns\FormatsCommandOutput;
 use Ahmdrv\PermissionRegistry\Contracts\PermissionRegistry;
 use Ahmdrv\PermissionRegistry\Definitions\PermissionDefinition;
 use Ahmdrv\PermissionRegistry\Enums\RiskLevel;
@@ -12,6 +13,8 @@ use Illuminate\Console\Command;
 
 final class ListCommand extends Command
 {
+    use FormatsCommandOutput;
+
     protected $signature = 'rbac:list
         {--group= : Filter by group key}
         {--resource= : Filter by resource key}
@@ -40,22 +43,82 @@ final class ListCommand extends Command
             return self::SUCCESS;
         }
 
-        $withRecommendations = (bool) $this->option('with-recommendations');
-        $headers = ['Group', 'Resource', 'Action', 'Permission', 'Risk', 'Direct'];
-        if ($withRecommendations) {
-            $headers[] = 'Recommendations';
-        }
-        $rows = array_map(static function (PermissionDefinition $permission) use ($withRecommendations): array {
-            $row = [$permission->groupKey, $permission->resourceKey, $permission->actionKey, $permission->name, $permission->risk->value, $permission->directGrantable ? 'yes' : 'no'];
-            if ($withRecommendations) {
-                $row[] = implode('; ', array_map(static fn ($recommendation): string => $recommendation->targetPermission.($recommendation->reason ? " ({$recommendation->reason})" : ''), $permission->recommendations));
-            }
+        $filters = $this->activeFilters();
+        if ($permissions === []) {
+            $this->components->warn($filters === [] ? 'No permissions are registered.' : 'No permissions match the filters: '.implode(', ', $filters).'.');
 
-            return $row;
-        }, $permissions);
-        $this->table($headers, $rows);
+            return self::SUCCESS;
+        }
+
+        $this->heading('Registered permissions', $filters === [] ? null : 'filtered by '.implode(', ', $filters));
+
+        /** @var array<string, array<string, list<PermissionDefinition>>> $tree */
+        $tree = [];
+        foreach ($permissions as $permission) {
+            $tree[$permission->groupKey][$permission->resourceKey][] = $permission;
+        }
+
+        $withRecommendations = (bool) $this->option('with-recommendations');
+        $resourceCount = 0;
+        foreach ($tree as $group => $resources) {
+            $this->newLine();
+            $this->line('  <fg=green;options=bold>'.$this->escape(strtoupper($group)).'</>');
+            foreach ($resources as $resourceKey => $resourcePermissions) {
+                $resourceCount++;
+                $this->renderResource($registry, $resourceKey, $resourcePermissions, $withRecommendations);
+            }
+        }
+
+        $this->newLine();
+        $this->hint('Showing '.$this->quantity(count($permissions), 'permission').' across '.$this->quantity($resourceCount, 'resource').' in '.$this->quantity(count($tree), 'group').'.');
+        $this->hint('direct = eligible for direct user grants when enabled · role only = assignable through roles only');
+        $this->newLine();
 
         return self::SUCCESS;
+    }
+
+    /** @param list<PermissionDefinition> $permissions */
+    private function renderResource(PermissionRegistry $registry, string $resourceKey, array $permissions, bool $withRecommendations): void
+    {
+        $resource = $registry->findResource($resourceKey);
+        $meta = [$resourceKey];
+        if ($resource !== null) {
+            $meta[] = $resource->preset->value;
+        }
+        $meta[] = $this->quantity(count($permissions), 'permission');
+
+        $this->newLine();
+        $this->line('  <options=bold>'.$this->escape($permissions[0]->resourceLabel).'</> <fg=gray>'.$this->escape(implode(' · ', $meta)).'</>');
+        if ($resource?->description !== null && $resource->description !== '') {
+            $this->hint($resource->description);
+        }
+
+        foreach ($permissions as $permission) {
+            $this->detail(
+                $this->escape($permission->name).' <fg=gray>'.$this->escape($permission->label).'</>',
+                $this->riskBadge($permission->risk).' <fg=gray>·</> '.($permission->directGrantable ? '<fg=cyan>direct</>' : '<fg=gray>role only</>'),
+            );
+
+            if ($withRecommendations) {
+                foreach ($permission->recommendations as $recommendation) {
+                    $this->entry('  <fg=gray>↳ recommends</>', $recommendation->targetPermission, $recommendation->reason !== null ? "— {$recommendation->reason}" : null);
+                }
+            }
+        }
+    }
+
+    /** @return list<string> */
+    private function activeFilters(): array
+    {
+        $filters = [];
+        foreach (['group', 'resource', 'risk'] as $option) {
+            $value = $this->option($option);
+            if ($value !== null) {
+                $filters[] = "{$option}={$value}";
+            }
+        }
+
+        return $filters;
     }
 
     private function matches(PermissionDefinition $permission): bool

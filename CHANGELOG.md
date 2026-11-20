@@ -2,6 +2,29 @@
 
 All notable changes to `laravel-permission-registry` will be documented in this file.
 
+## Unreleased
+
+## 1.2.0 - 2026-11-20
+
+### Changed
+
+- Redesign human-readable `rbac:*` command output into structured sections with aligned summaries, itemized changes, and suggested next steps. `rbac:list` groups permissions by group and resource with colored risk levels and direct eligibility, `rbac:diff` lists each category separately (synchronized permissions with `-v`), `rbac:sync` itemizes created and deleted permissions and distinguishes dry runs and no-ops, `rbac:validate` summarizes registry counts and itemizes errors, and `rbac:make-resource` summarizes the generated resource. JSON output, exit codes, and command behavior are unchanged.
+- Make custom actions directly grantable by default, matching preset actions. Direct user permissions remain globally disabled by default and still require actor authorization and guard validation. Declare `PermissionAction::make('...')->directGrantable(false)` to keep an action role-only.
+
+### Documentation
+
+- Explain the package's purpose in the README and add a quick start for protecting a new feature, with a full [quick start guide](docs/quick-start.md).
+- Direct readers to Spatie's installation guide before installing this package, and focus the installation docs on package-specific requirements.
+
+### Upgrade
+
+Applications that enable direct permissions can now grant and synchronize custom actions directly unless they opt out. Add `->directGrantable(false)` to each custom action that must stay role-only. Existing assignments are not changed automatically.
+
+### Validation
+
+- Local suite: 49 tests and 227 assertions passed.
+- PHPStan, Pint, and strict Composer validation passed.
+
 ## Laravel Permission Registry v1.1.0 - 2026-10-13
 
 ### Changed
@@ -38,8 +61,6 @@ Import `Ahmdrv\PermissionRegistry\ValueObjects\PermissionAction`. For read-only 
 - All 37 GitHub compatibility jobs passed on both the branch and PR across Laravel 10–13, PHP 8.3–8.5, Ubuntu, and Windows. GitHub PHPStan and Pint checks passed.
 
 Compatibility remains PHP 8.3+, Laravel 10–13, and Spatie Permission 6.10+ within major version 6.
-
-## Unreleased
 
 ## 1.1.0 - 2026-10-14
 
