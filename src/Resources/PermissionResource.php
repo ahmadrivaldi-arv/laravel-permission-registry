@@ -103,7 +103,7 @@ abstract class PermissionResource
                 label: $action->actionLabel ?? Str::headline($action->key),
                 description: $action->actionDescription,
                 risk: $action->riskLevel ?? RiskLevel::MEDIUM,
-                directGrantable: $action->isDirectGrantable ?? false,
+                directGrantable: $action->isDirectGrantable ?? true,
                 recommendations: $recommendations,
                 resourceKey: $resourceKey,
                 resourceLabel: $label,
@@ -142,7 +142,7 @@ abstract class PermissionResource
 
     private static function standard(string $key, RiskLevel $risk): PermissionAction
     {
-        return PermissionAction::make($key)->risk($risk)->directGrantable();
+        return PermissionAction::make($key)->risk($risk);
     }
 
     private static function withDefaults(PermissionAction $action): PermissionAction

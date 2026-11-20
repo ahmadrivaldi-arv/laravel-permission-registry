@@ -32,7 +32,7 @@ it('expands presets and requires no CRUD declarations', function () {
         'products.view_any', 'products.view', 'products.create', 'products.update', 'products.delete', 'products.publish',
     ])->and(array_column($registry->findResource('reports')->actions, 'name'))->toBe([
         'reports.view_any', 'reports.view',
-    ])->and(array_column($registry->findResource('settings')->actions, 'name'))->toBe(['settings.manage']);
+    ])->and(array_column($registry->findResource('settings')->actions, 'name'))->toBe(['settings.manage', 'settings.purge']);
 });
 
 it('adds custom actions and selectively overrides standard metadata', function () {
@@ -48,15 +48,15 @@ it('adds custom actions and selectively overrides standard metadata', function (
         ->directGrantable->toBeTrue();
 });
 
-it('makes preset actions directly grantable while preserving explicit opt-outs and custom defaults', function () {
+it('makes preset and custom actions directly grantable by default while preserving explicit opt-outs', function () {
     $registry = registryWith([ProductPermissionResource::class, ReportPermissionResource::class, SettingsPermissionResource::class]);
 
-    foreach (['products.view_any', 'products.view', 'products.create', 'products.delete', 'reports.view_any', 'reports.view'] as $name) {
+    foreach (['products.view_any', 'products.view', 'products.create', 'products.delete', 'reports.view_any', 'reports.view', 'settings.manage'] as $name) {
         expect($registry->findPermission($name)->directGrantable)->toBeTrue();
     }
 
     expect($registry->findPermission('products.update')->directGrantable)->toBeFalse()
-        ->and($registry->findPermission('settings.manage')->directGrantable)->toBeFalse()
+        ->and($registry->findPermission('settings.purge')->directGrantable)->toBeFalse()
         ->and(array_column(WithoutDeletePermissionResource::definition()->actions, 'directGrantable'))->toBe([true, true, true, true]);
 });
 

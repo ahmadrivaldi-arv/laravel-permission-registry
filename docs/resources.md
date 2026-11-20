@@ -135,7 +135,7 @@ Use `update`, not `edit`: permissions describe capabilities, not screens.
 
 These defaults apply to both CRUD and read-only presets. Direct mutations still require the global feature flag and management authorization. Eligibility never grants or preselects a permission.
 
-Custom actions default to a humanized key label, medium risk, no description, no recommendations, and not directly grantable.
+Custom actions default to a humanized key label, medium risk, no description, no recommendations, and directly grantable. Declare `->directGrantable(false)` to restrict a custom action to role assignments.
 
 ## Adding custom actions
 
@@ -206,7 +206,7 @@ Unknown exclusions fail validation. This catches likely typos such as `publsih` 
 | Label | `label('Publish product')` | Humanized key by default |
 | Description | `description('...')` | Optional |
 | Risk | `risk(RiskLevel::HIGH)` | Preset-specific or medium for custom actions |
-| Direct eligibility | `directGrantable(bool $grantable = true)` | True for preset actions; false for custom actions |
+| Direct eligibility | `directGrantable(bool $grantable = true)` | True for preset and custom actions; `false` opts out |
 | Recommendation | `recommend(...)` | Advisory metadata only |
 
 Group and risk metadata do not enforce authorization. They are provided for inspection, audit tools, filtering, and possible separate UI consumers.

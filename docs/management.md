@@ -133,10 +133,10 @@ Direct permissions are exceptional overrides, not the preferred access model.
 
 ### Check individual action eligibility
 
-CRUD and read-only preset actions are directly grantable by default. Custom actions require explicit eligibility:
+Preset and custom actions are directly grantable by default. Opt an action out to restrict it to role assignments:
 
 ```php
-PermissionAction::make('publish')->directGrantable();
+PermissionAction::make('purge')->directGrantable(false);
 ```
 
 The global flag and eligible metadata are both required. To opt a preset action out, declare `PermissionAction::make('delete')->directGrantable(false)` in the resource's `actions()` hook. `directGrantable` does not restrict role assignments and never grants or preselects permissions.

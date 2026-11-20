@@ -7,6 +7,11 @@ All notable changes to `laravel-permission-registry` will be documented in this 
 ### Changed
 
 - Redesign human-readable `rbac:*` command output into structured sections with aligned summaries, itemized changes, and suggested next steps. `rbac:list` groups permissions by group and resource with colored risk levels and direct eligibility, `rbac:diff` lists each category separately (synchronized permissions with `-v`), `rbac:sync` itemizes created and deleted permissions and distinguishes dry runs and no-ops, `rbac:validate` summarizes registry counts and itemizes errors, and `rbac:make-resource` summarizes the generated resource. JSON output, exit codes, and command behavior are unchanged.
+- Make custom actions directly grantable by default, matching preset actions. Direct user permissions remain globally disabled by default and still require actor authorization and guard validation. Declare `PermissionAction::make('...')->directGrantable(false)` to keep an action role-only.
+
+### Upgrade
+
+Applications that enable direct permissions can now grant and synchronize custom actions directly unless they opt out. Add `->directGrantable(false)` to each custom action that must stay role-only. Existing assignments are not changed automatically.
 
 ## 1.1.0 - 2026-10-14
 
