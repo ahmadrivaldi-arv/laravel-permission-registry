@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Ahmdrv\PermissionRegistry\Commands;
 
+use Ahmdrv\PermissionRegistry\Commands\Concerns\FormatsCommandOutput;
 use Ahmdrv\PermissionRegistry\Exceptions\PermissionRegistryException;
 use Ahmdrv\PermissionRegistry\Services\PermissionSynchronizer;
 use Illuminate\Console\Command;
 
 final class DiffCommand extends Command
 {
+    use FormatsCommandOutput;
+
     protected $signature = 'rbac:diff {--guard= : Spatie guard name} {--json : Emit machine-readable JSON}';
 
     protected $description = 'Compare registered permissions with Spatie permission rows';
@@ -36,29 +39,49 @@ final class DiffCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->components->info("Permission diff for guard [{$diff->guard}].");
-        $this->table(['Category', 'Permission'], $this->rows([
-            'missing' => $diff->missing,
-            'synchronized' => $diff->synchronized,
-            'managed orphan' => $diff->managedOrphans,
-            'unmanaged' => $diff->unmanaged,
-        ]));
+        $verbose = $this->output->isVerbose();
+        $categories = [
+            ['Missing', 'in code, not in the database', $diff->missing, 'yellow', '+', true],
+            ['Synchronized', 'in code and the database', $diff->synchronized, 'green', '✓', $verbose],
+            ['Managed orphans', 'database only, under a registered resource', $diff->managedOrphans, 'red', '−', true],
+            ['Unmanaged', 'database only, never modified by this package', $diff->unmanaged, 'gray', '·', true],
+        ];
 
-        return self::SUCCESS;
-    }
+        $this->heading('Permission diff', "guard [{$diff->guard}]");
+        foreach ($categories as [$title, $meaning, $names, $color]) {
+            $this->detail("{$title} <fg=gray>{$meaning}</>", $this->tally(count($names), $color));
+        }
 
-    /** @param array<string, list<string>> $categories
-     * @return list<array{string, string}>
-     */
-    private function rows(array $categories): array
-    {
-        $rows = [];
-        foreach ($categories as $category => $permissions) {
-            foreach ($permissions as $permission) {
-                $rows[] = [$category, $permission];
+        foreach ($categories as [$title, , $names, $color, $marker, $expanded]) {
+            if ($names === [] || ! $expanded) {
+                continue;
+            }
+            $this->heading($title, '('.count($names).')');
+            foreach ($names as $name) {
+                $this->entry("<fg={$color}>{$marker}</>", $name);
             }
         }
 
-        return $rows;
+        if (! $verbose && $diff->synchronized !== []) {
+            $this->newLine();
+            $this->hint('Run with -v to list synchronized permissions.');
+        }
+
+        if ($diff->missing === [] && $diff->managedOrphans === []) {
+            $this->components->info("The database matches the registry for guard [{$diff->guard}].");
+
+            return self::SUCCESS;
+        }
+
+        $this->heading('Next steps');
+        if ($diff->missing !== []) {
+            $this->entry('<fg=gray>→</>', 'php artisan rbac:sync', 'creates '.$this->quantity(count($diff->missing), 'missing permission'));
+        }
+        if ($diff->managedOrphans !== []) {
+            $this->entry('<fg=gray>→</>', 'php artisan rbac:sync --prune', 'reviews '.$this->quantity(count($diff->managedOrphans), 'managed orphan').' for deletion');
+        }
+        $this->newLine();
+
+        return self::SUCCESS;
     }
 }

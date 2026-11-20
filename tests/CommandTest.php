@@ -124,3 +124,100 @@ it('prunes only displayed managed orphans and never unmanaged permissions', func
         ->and(Permission::where('name', 'third_party.use')->exists())->toBeTrue()
         ->and(Permission::where('name', 'products.delete')->exists())->toBeTrue();
 });
+
+it('renders a structured validation summary and itemized failures', function () {
+    $this->artisan('rbac:validate')
+        ->expectsOutputToContain('Permission registry')
+        ->expectsOutputToContain('Recommendations')
+        ->expectsOutputToContain('Warnings')
+        ->assertSuccessful();
+
+    config()->set('permission-registry.resources', [ProductPermissionResource::class, ReportPermissionResource::class, 'Missing\\PermissionResource']);
+    app()->forgetInstance(PermissionRegistry::class);
+
+    $this->artisan('rbac:validate')
+        ->expectsOutputToContain('Permission registry is invalid: 1 error found')
+        ->expectsOutputToContain('Missing\\PermissionResource')
+        ->assertFailed();
+});
+
+it('lists permissions grouped by group and resource with risk and direct eligibility', function () {
+    $this->artisan('rbac:list', ['--with-recommendations' => true])
+        ->expectsOutputToContain('CATALOG')
+        ->expectsOutputToContain('products · crud · 6 permissions')
+        ->expectsOutputToContain('products.publish Publish product')
+        ->expectsOutputToContain('recommends reports.view_any')
+        ->expectsOutputToContain('Showing 8 permissions across 2 resources in 2 groups.')
+        ->assertSuccessful();
+
+    $this->artisan('rbac:list', ['--group' => 'missing_group'])
+        ->expectsOutputToContain('No permissions match the filters: group=missing_group.')
+        ->assertSuccessful();
+});
+
+it('renders diff sections with next steps and a matching state', function () {
+    Permission::findOrCreate('products.legacy', 'web');
+    Permission::findOrCreate('third_party.use', 'web');
+
+    $this->artisan('rbac:diff')
+        ->expectsOutputToContain('Permission diff guard [web]')
+        ->expectsOutputToContain('+ products.publish')
+        ->expectsOutputToContain('− products.legacy')
+        ->expectsOutputToContain('· third_party.use')
+        ->expectsOutputToContain('php artisan rbac:sync --prune')
+        ->assertSuccessful();
+
+    Permission::where('name', 'products.legacy')->delete();
+    $this->artisan('rbac:sync')->assertSuccessful();
+
+    $this->artisan('rbac:diff')
+        ->expectsOutputToContain('Run with -v to list synchronized permissions.')
+        ->expectsOutputToContain('The database matches the registry for guard [web].')
+        ->assertSuccessful();
+
+    expect(Permission::where('name', 'third_party.use')->exists())->toBeTrue();
+});
+
+it('itemizes sync changes and distinguishes dry runs and no-ops', function () {
+    $this->artisan('rbac:sync', ['--dry-run' => true])
+        ->expectsOutputToContain('To create (8)')
+        ->expectsOutputToContain('8 to create, 0 existing, 0 to delete, 0 untouched. No changes were written.')
+        ->assertSuccessful();
+    expect(Permission::count())->toBe(0);
+
+    $this->artisan('rbac:sync')
+        ->expectsOutputToContain('Created (8)')
+        ->expectsOutputToContain('+ products.publish')
+        ->assertSuccessful();
+
+    Permission::findOrCreate('products.legacy', 'web');
+    $this->artisan('rbac:sync')
+        ->expectsOutputToContain('Nothing to synchronize for guard [web]')
+        ->expectsOutputToContain('1 managed orphan kept.')
+        ->assertSuccessful();
+
+    $this->artisan('rbac:sync', ['--prune' => true])
+        ->expectsOutputToContain('1 managed orphan permission will be deleted for guard [web]')
+        ->expectsConfirmation('Delete exactly these managed orphan permissions?', 'no')
+        ->expectsOutputToContain('Synchronization cancelled; no database changes were made.')
+        ->assertFailed();
+    expect(Permission::where('name', 'products.legacy')->exists())->toBeTrue();
+});
+
+it('summarizes generated resources with next steps', function () {
+    config()->set('permission-registry.discovery.enabled', true);
+    config()->set('permission-registry.discovery.paths', [sys_get_temp_dir().'/permission-registry-summary-'.bin2hex(random_bytes(5))]);
+    config()->set('permission-registry.discovery.namespace', 'App\\Authorization\\Permissions');
+
+    $this->artisan('rbac:make-resource', ['name' => 'Invoice', '--group' => 'billing'])
+        ->expectsOutputToContain('Created permission resource')
+        ->expectsOutputToContain('invoices')
+        ->expectsOutputToContain('discovered automatically')
+        ->expectsOutputToContain('php artisan rbac:validate')
+        ->doesntExpectOutputToContain('Discovery is disabled')
+        ->assertSuccessful();
+
+    $this->artisan('rbac:make-resource', ['name' => 'Invoice', '--force' => true])
+        ->expectsOutputToContain('Overwrote permission resource')
+        ->assertSuccessful();
+});

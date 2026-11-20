@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ahmdrv\PermissionRegistry\Commands;
 
+use Ahmdrv\PermissionRegistry\Commands\Concerns\FormatsCommandOutput;
 use Ahmdrv\PermissionRegistry\Enums\PermissionPreset;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
@@ -12,6 +13,8 @@ use Illuminate\Support\Str;
 
 final class MakeResourceCommand extends Command
 {
+    use FormatsCommandOutput;
+
     protected $signature = 'rbac:make-resource
         {name : Resource name, such as Product}
         {--key= : Explicit plural snake_case resource key}
@@ -73,13 +76,29 @@ final class MakeResourceCommand extends Command
             [trim($namespace, '\\'), $class, $preset->name, $key, Str::headline($subject), $group],
             $stub,
         );
+        $overwritten = $this->files->exists($path);
         $this->files->ensureDirectoryExists(dirname($path));
         $this->files->put($path, $contents);
         $fqcn = trim($namespace, '\\').'\\'.$class;
-        $this->components->info("Created [{$path}].");
-        if (! (bool) $this->config->get('permission-registry.discovery.enabled', true)) {
+        $discoveryEnabled = (bool) $this->config->get('permission-registry.discovery.enabled', true);
+
+        $this->components->info(($overwritten ? 'Overwrote' : 'Created')." permission resource [{$path}].");
+        $this->detail('Class', $this->escape($fqcn));
+        $this->detail('Resource key', $key);
+        $this->detail('Group', $group);
+        $this->detail('Preset', $preset->value);
+        $this->detail('Registration', $discoveryEnabled ? '<fg=green>discovered automatically</>' : '<fg=yellow>manual</>');
+
+        if (! $discoveryEnabled) {
             $this->components->warn("Discovery is disabled. Add [{$fqcn}::class] to permission-registry.resources.");
+        } else {
+            $this->newLine();
         }
+
+        $this->line('  <options=bold>Next steps</>');
+        $this->entry('<fg=gray>→</>', 'php artisan rbac:validate', 'check the definition');
+        $this->entry('<fg=gray>→</>', 'php artisan rbac:sync --dry-run', 'preview the new permissions');
+        $this->newLine();
 
         return self::SUCCESS;
     }

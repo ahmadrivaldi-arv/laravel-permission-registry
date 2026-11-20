@@ -4,6 +4,10 @@ All notable changes to `laravel-permission-registry` will be documented in this 
 
 ## Unreleased
 
+### Changed
+
+- Redesign human-readable `rbac:*` command output into structured sections with aligned summaries, itemized changes, and suggested next steps. `rbac:list` groups permissions by group and resource with colored risk levels and direct eligibility, `rbac:diff` lists each category separately (synchronized permissions with `-v`), `rbac:sync` itemizes created and deleted permissions and distinguishes dry runs and no-ops, `rbac:validate` summarizes registry counts and itemizes errors, and `rbac:make-resource` summarizes the generated resource. JSON output, exit codes, and command behavior are unchanged.
+
 ## 1.1.0 - 2026-10-14
 
 ### Changed
