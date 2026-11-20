@@ -1,6 +1,6 @@
 # Quick start: protecting a new feature
 
-This guide walks through the everyday workflow: you are building a new feature, some users may use it and others may not, so it needs access control. Step 0 is a one-time prerequisite; steps 1 to 6 repeat for every new feature.
+This guide walks through the everyday workflow: you are building a new feature, some users may use it and others may not, so it needs access control. Step 1 is a one-time prerequisite; steps 2 to 7 repeat for every new feature.
 
 ## When does a feature need a permission resource?
 
@@ -19,18 +19,18 @@ A resource describes an **authorization domain**, not an Eloquent model:
 ## The workflow at a glance
 
 ```text
-0. Prerequisite         Spatie Permission installed and migrated (once per application)
-1. Generate a resource   php artisan rbac:make-resource Invoice --group=billing
-2. Declare actions       edit actions() / exceptActions() in the resource
-3. Validate              php artisan rbac:validate
-4. Synchronize           php artisan rbac:sync --dry-run, then php artisan rbac:sync
-5. Enforce               $this->authorize('invoices.create'), policies, @can
-6. Assign                grant the permissions to roles
+1. Prerequisite          Spatie Permission installed and migrated (once per application)
+2. Generate a resource   php artisan rbac:make-resource Invoice --group=billing
+3. Declare actions       edit actions() / exceptActions() in the resource
+4. Validate              php artisan rbac:validate
+5. Synchronize           php artisan rbac:sync --dry-run, then php artisan rbac:sync
+6. Enforce               $this->authorize('invoices.create'), policies, @can
+7. Assign                grant the permissions to roles
 ```
 
 The example below adds invoicing. Only some staff may create, send, or void invoices.
 
-## 0. Prerequisite: Spatie Permission is installed and migrated
+## 1. Prerequisite: Spatie Permission is installed and migrated
 
 This package owns no tables; roles, permissions, and assignments live in Spatie's tables. Before your first feature, follow [Spatie's installation guide](https://spatie.be/docs/laravel-permission/v6/installation-laravel) once per application, including its migrations and the `HasRoles` trait on your user model. Then install this package:
 
@@ -40,7 +40,7 @@ composer require ahmdrv/laravel-permission-registry
 
 See [installation](installation.md) for this package's configuration and provider registration.
 
-## 1. Generate the resource
+## 2. Generate the resource
 
 ```bash
 php artisan rbac:make-resource Invoice --group=billing
@@ -54,7 +54,7 @@ The command creates `app/Authorization/Permissions/InvoicePermissionResource.php
 
 With discovery enabled, the class is registered automatically. With discovery disabled, add the printed class name to `permission-registry.resources`.
 
-## 2. Declare the feature's actions
+## 3. Declare the feature's actions
 
 The CRUD preset already provides `invoices.view_any`, `invoices.view`, `invoices.create`, `invoices.update`, and `invoices.delete`. Add the actions your feature checks beyond those, and remove preset actions it never uses:
 
@@ -108,7 +108,7 @@ final class InvoicePermissionResource extends PermissionResource
 
 This resource defines exactly six independent permissions: `invoices.view_any`, `invoices.view`, `invoices.create`, `invoices.update`, `invoices.send`, and `invoices.void`. None of them implies another. See [resources](resources.md) for presets, metadata, and direct-grant eligibility.
 
-## 3. Validate
+## 4. Validate
 
 ```bash
 php artisan rbac:validate
@@ -117,7 +117,7 @@ php artisan rbac:list --resource=invoices
 
 `rbac:validate` reads no database and fails with a non-zero exit code on invalid keys, duplicates, or broken recommendation targets. Add it to CI so definition mistakes never reach production.
 
-## 4. Synchronize the permission rows
+## 5. Synchronize the permission rows
 
 ```bash
 php artisan rbac:sync --dry-run   # shows what would be created
@@ -126,7 +126,7 @@ php artisan rbac:sync             # creates the missing rows
 
 Sync is additive and idempotent: it creates missing permissions and leaves every existing or unrelated row untouched. Run it during each deployment, before anyone is assigned the new permissions. See [operations](operations.md) for the deployment order and [commands](commands.md) for pruning.
 
-## 5. Enforce the permissions in the feature
+## 6. Enforce the permissions in the feature
 
 Check the global capability where the action happens:
 
@@ -162,7 +162,7 @@ Hide controls the user cannot use:
 
 `@can` is presentation only. Every server-side action, including Livewire actions, must authorize again. See [authorization](authorization.md).
 
-## 6. Assign the permissions
+## 7. Assign the permissions
 
 Grant the new permissions to roles through the management services:
 

@@ -27,7 +27,7 @@ Whenever you build a feature that should be restricted to certain users, give it
 
 Suppose you are adding invoicing, and only some staff may create, send, or void invoices.
 
-**0. Prerequisite: Spatie Permission is installed and migrated.**
+**1. Prerequisite: Spatie Permission is installed and migrated.**
 
 This package stores nothing itself; roles and permissions live in Spatie's tables. Follow [Spatie's installation guide](https://spatie.be/docs/laravel-permission/v6/installation-laravel) once per application (publish, migrate, add `HasRoles`), then:
 
@@ -35,7 +35,7 @@ This package stores nothing itself; roles and permissions live in Spatie's table
 composer require ahmdrv/laravel-permission-registry
 ```
 
-**1. Generate a permission resource.**
+**2. Generate a permission resource.**
 
 ```bash
 php artisan rbac:make-resource Invoice --group=billing
@@ -43,7 +43,7 @@ php artisan rbac:make-resource Invoice --group=billing
 
 This creates `app/Authorization/Permissions/InvoicePermissionResource.php` with the CRUD preset, which already provides `invoices.view_any`, `invoices.view`, `invoices.create`, `invoices.update`, and `invoices.delete`.
 
-**2. Add the feature's own actions.**
+**3. Add the feature's own actions.**
 
 ```php
 use Ahmdrv\PermissionRegistry\Enums\RiskLevel;
@@ -60,7 +60,7 @@ protected static function actions(): array
 
 Declare only actions the feature really checks, and use `exceptActions()` to drop preset actions you do not need.
 
-**3. Validate and synchronize.**
+**4. Validate and synchronize.**
 
 ```bash
 php artisan rbac:validate          # check definitions (a good CI step)
@@ -70,7 +70,7 @@ php artisan rbac:sync              # create the missing permission rows
 
 Run `rbac:sync` during each deployment so a new feature's permissions exist before anyone is assigned them.
 
-**4. Enforce the permissions in the feature.**
+**5. Enforce the permissions in the feature.**
 
 ```php
 // Controller or Livewire action: global capability
@@ -88,7 +88,7 @@ $this->authorize('void', $invoice);
 
 `@can` only hides UI. Always authorize again on the server.
 
-**5. Give the permissions to a role.**
+**6. Give the permissions to a role.**
 
 ```php
 $role = $roleManager->create($actor, 'billing-clerk');
