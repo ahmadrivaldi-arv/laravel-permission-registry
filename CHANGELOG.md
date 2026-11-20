@@ -2,6 +2,41 @@
 
 All notable changes to `laravel-permission-registry` will be documented in this file.
 
+## v1.2.0 - 2026-11-20
+
+### Changed
+
+- **Structured command output.** `rbac:validate`, `rbac:list`, `rbac:diff`, `rbac:sync`, and `rbac:make-resource` now render aligned sections, itemized changes, and suggested next steps. `rbac:list` groups permissions by group and resource with colored risk levels and direct eligibility. `rbac:diff` lists each category separately and shows synchronized permissions with `-v`. `rbac:sync` itemizes created and deleted permissions and distinguishes dry runs and no-ops. JSON output, exit codes, and command behavior are unchanged.
+- **Custom actions are directly grantable by default**, matching preset actions. Direct user permissions remain globally disabled by default and still require actor authorization, registered permission input, and matching guards. Use `->directGrantable(false)` to keep any action role-only.
+
+Eligibility never grants or preselects permissions, and recommendations remain advisory metadata only.
+
+### Documentation
+
+- The README explains the package's purpose and adds a quick start for protecting a new feature, backed by a new `docs/quick-start.md` guide.
+- Installation now points to Spatie's own installation guide first and focuses on package-specific requirements.
+
+### Upgrade
+
+Applications that enable `permission-registry.direct_permissions.enabled` can now grant and synchronize custom actions directly unless they opt out:
+
+```php
+PermissionAction::make('purge')->directGrantable(false);
+
+```
+Existing assignments are not changed automatically.
+
+### Compatibility
+
+- PHP 8.3 or newer
+- Laravel 10, 11, 12, or 13
+- `spatie/laravel-permission` 6.10 or newer within version 6
+
+### Validation
+
+- All 37 GitHub compatibility jobs passed across Laravel 10–13, PHP 8.3–8.5, Ubuntu, and Windows.
+- Local suite: 49 tests and 227 assertions passed. PHPStan, Pint, and strict Composer validation passed.
+
 ## Unreleased
 
 ## 1.2.0 - 2026-11-20
@@ -51,6 +86,7 @@ protected static function actions(): array
     ];
 }
 
+
 ```
 Import `Ahmdrv\PermissionRegistry\ValueObjects\PermissionAction`. For read-only resources, override only `view_any` and `view`. Existing assignments are not changed automatically.
 
@@ -88,6 +124,7 @@ Laravel 10 applications running PHP 8.3 or newer and Spatie Permission 6.10.x ca
 
 ```bash
 composer require ahmdrv/laravel-permission-registry
+
 
 
 ```
@@ -153,6 +190,7 @@ The first production-ready release of a headless, code-first permission resource
 
 ```bash
 composer require ahmdrv/laravel-permission-registry
+
 
 
 
